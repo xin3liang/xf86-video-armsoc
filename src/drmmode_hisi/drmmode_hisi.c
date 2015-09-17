@@ -38,15 +38,22 @@
 /* Padding added down each side of cursor image */
 #define CURSORPAD (0)
 
+#define ALIGN(val, align)	(((val) + (align) - 1) & ~((align) - 1))
+
 static int create_custom_gem(int fd, struct armsoc_create_gem *create_gem)
 {
 	struct drm_mode_create_dumb arg;
+	unsigned int pitch;
 	int ret;
 
+	/* For 32bpp mali 450GPU needs pitch 8 bytes alignment */
+	pitch = ALIGN(create_gem->width * ((create_gem->bpp + 7) / 8), 8);
 	memset(&arg, 0, sizeof(arg));
 	arg.width = create_gem->width;
 	arg.height = create_gem->height;
 	arg.bpp = create_gem->bpp;
+	arg.pitch = pitch;
+	arg.size = pitch * create_gem->height;
 
 	ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &arg);
 	if (ret)
@@ -60,6 +67,7 @@ static int create_custom_gem(int fd, struct armsoc_create_gem *create_gem)
 }
 
 struct drmmode_interface hisi_interface = {
+	"hisi"		      /* name of drm driver */,
 	1                     /* use_page_flip_events */,
 	1                     /* use_early_display */,
 	CURSORW               /* cursor width */,
@@ -70,9 +78,3 @@ struct drmmode_interface hisi_interface = {
 	0                     /* vblank_query_supported */,
 	create_custom_gem     /* create_custom_gem */,
 };
-
-struct drmmode_interface *drmmode_interface_get_implementation(int drm_fd)
-{
-	return &hisi_interface;
-}
-
