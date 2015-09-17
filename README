@@ -45,6 +45,12 @@ in ARMSOCDRI2SwapComplete after the src becomes pARMSOC->scanout and the screen 
 
 The cursor takes a ref on its bo in drmmode_cursor_init and drops it in drmmode_cursor_fini
 
+Building Hisilicon Kirin drmmode driver
+--------------------------------
+$ sudo apt-get install -y xutils-dev autoconf automake libtool xorg-dev libudev-dev man
+$ ./autogen.sh --prefix=/usr
+$ make; make install
+
 
 
 
